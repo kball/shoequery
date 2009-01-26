@@ -1,0 +1,39 @@
+ShoeQuery (better name needed) was born out of a desire to be able to find and
+manipulate elements in Shoes without having stashed away their locations ahead of time.
+It was inspired by jQuery's mechanisms for finding and manipulating DOM objects in
+Javascript. 
+
+The fundamental object (a ShoeQuery object) is pretty much an array of Shoes Elements,
+augmented with some extra functions.  ShoeQuery objects are created via a helper 
+(unsurprisingly named shoe_query) that lives in the Shoes::App object, and so should
+be accessible anywhere you want it.  You can pass into that helper a selector,
+and it will return a ShoeQuery object containing the elements that match.  You can also
+pass in an array of elements you already have handy, or an existing element, and it
+will also return a ShoeQuery object containing those elements.  This form should be
+familiar for those who've used jQuery.
+
+Right now, the things it lets you do are pretty limited, though a lot of the
+functionality jQuery specially provides already exists in Ruby.  The one big feature
+is the ability to find elements by type, including css-like hierarchy.  You can do
+this either by invoking shoe_query directly, or calling find on an existing shoe_query
+object (to search within its children).  For example, given the demo app:
+
+Shoes.app do
+  app = Shoes.app do
+  para "foo"
+  f = flow do
+    stack do
+      para "bar"
+      para 'blah'
+    end
+  end
+  b = button "click me"
+  b.click do
+    para shoe_query('para').inspect
+    para shoe_query('flow para').inspect
+    para shoe_query(f).find('para').inspect
+  end
+end
+
+In this case, the first shoe_query returns all three paragraph elements, while the latter
+two each return just the paragraphs that are children of the flow f.
