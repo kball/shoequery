@@ -1,3 +1,14 @@
+class String
+  #camelize copied from activesupport
+  def camelize(first_letter_in_uppercase = true)
+    if first_letter_in_uppercase
+      self.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }
+    else
+      self.first + camelize(self)[1..-1]
+    end
+  end
+
+end
 class ShoeQuery < Array
   def initialize(base, stuff)
     if stuff.is_a? String
@@ -34,7 +45,7 @@ class ShoeQuery < Array
     if klass.is_a? Class
       klass
     else
-      Shoes.const_get(klass.to_s.capitalize)
+      Shoes.const_get(klass.to_s.camelize)
     end
   end
 end
