@@ -18,22 +18,30 @@ is the ability to find elements by type, including css-like hierarchy.  You can 
 this either by invoking shoe_query directly, or calling find on an existing shoe_query
 object (to search within its children).  For example, given the demo app:
 
+load 'shoe_query.rb'
 Shoes.app do
   app = Shoes.app do
   para "foo"
   f = flow do
+    para "bar"
     stack do
-      para "bar"
       para 'blah'
     end
   end
-  b = button "click me"
+  b = button "click me to change all paragraphs"
   b.click do
-    para shoe_query('para').inspect
-    para shoe_query('flow para').inspect
-    para shoe_query(f).find('para').inspect
+    shoe_query('para').each {|p| p.text = "all ps" }
+  end
+  b2 = button "click me to just change the paragraphs inside the flow"
+  b2.click do
+    shoe_query('flow').find('para').each {|p| p.text = "flow ps"}
+  end
+  b3 = button "click me to change the button inside the stack"
+  b3.click do
+    shoe_query('stack para').each {|p| p.text = "stack p"}
   end
 end
 
-In this case, the first shoe_query returns all three paragraph elements, while the latter
-two each return just the paragraphs that are children of the flow f.
+In this case, the first button modifies all three paragraph elements, while the latter
+two use two different mechanisms to scope their changes to within the flow and within
+the stack respectively
