@@ -48,6 +48,27 @@ class ShoeQuery < Array
       Shoes.const_get(klass.to_s.camelize)
     end
   end
+
+  def method_missing(method, *args)
+    if args.empty?
+      # if you have no arguments, think of it as a query and return the answer
+      # for the first element.
+      if first.respond_to? method
+        return first.send(method)
+      else
+        return elem.style(method)
+      end
+    else
+      # Otherwise, think of it as a setter
+      setter = "#{method}=".to_sym
+      if first.respond_to? setter
+        each {|elem| elem.send(setter, *args)}
+      else
+        each {|elem| elem.style(method => args[0])}
+      end
+    end
+    self
+  end
 end
 
 class Shoes::App

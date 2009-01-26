@@ -9,7 +9,7 @@ app = Shoes.app do
   end
   b = button "click me to change all paragraphs"
   b.click do
-    shoe_query('para').each {|p| p.text = "all ps" }
+    shoe_query('para').text("all ps").stroke(red)
   end
   b2 = button "click me to just change the paragraphs inside the flow"
   b2.click do
@@ -19,5 +19,6 @@ app = Shoes.app do
   b3.click do
     shoe_query('stack para').each {|p| p.text = "stack p"}
   end
+
 
 end
