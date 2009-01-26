@@ -1,5 +1,5 @@
 class String
-  #camelize copied from activesupport
+  #camelize and demodulize copied from activesupport
   def camelize(first_letter_in_uppercase = true)
     if first_letter_in_uppercase
       self.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }
@@ -7,10 +7,13 @@ class String
       self.first + camelize(self)[1..-1]
     end
   end
-
+  def demodulize
+   self.gsub(/^.*::/, '')
+  end
 end
 class ShoeQuery < Array
   def initialize(base, stuff)
+    @base = base
     if stuff.is_a? String
       super(self.class.find(base, stuff))
     else
@@ -18,12 +21,12 @@ class ShoeQuery < Array
     end
   end
 
-  def find(descriptor)
-    map do |elem|
-      self.class.find(elem, descriptor)
-    end.flatten.compact.uniq  
+  def find(descriptor = nil, &block)
+    ShoeQuery.new(@base, self.map do |elem|
+      self.class.find(elem, descriptor, &block)
+    end.flatten.compact.uniq )
   end
-  def self.find(base, descriptor)
+  def self.find(base, descriptor = nil, &block)
     # for now only support individual types such as para, or button
     if descriptor.is_a? String  # deal with nested case
       chain = descriptor.split
@@ -31,18 +34,30 @@ class ShoeQuery < Array
         return self.find(base, chain[0]).find(chain[1..-1].join(' '))
       end
     end
-
     k = get_class(descriptor)
-    return [] unless (base && k && k.is_a?(Class))
-    results = base.is_a?(k) ? [base] : []
+
+    # Return empty unless there are more to find
+    if !base || !(k.is_a?(Class) || block_given?) || 
+       !(Shoes.constants + ['Shoes']).include?(base.class.to_s.demodulize)
+      return []
+    end
+
+    results = (!k || base.is_a?(k)) ? [base] : []
     if base.respond_to? :children
-      results += base.children.map {|child| self.find(child, k) }.flatten.compact
+      results += base.children.map do |child|
+        self.find(child, k, &block)
+      end.flatten.compact
+    end
+    if block_given?
+      results = results.select {|x| yield x}
     end
     ShoeQuery.new(base, results)
   end
 
   def self.get_class(klass)
-    if klass.is_a? Class
+    if !klass
+      nil
+    elsif klass.is_a? Class
       klass
     else
       Shoes.const_get(klass.to_s.camelize)
