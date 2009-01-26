@@ -49,22 +49,24 @@ class ShoeQuery < Array
     end
   end
 
-  def method_missing(method, *args)
-    if args.empty?
-      # if you have no arguments, think of it as a query and return the answer
-      # for the first element.
+  def method_missing(method, *args, &block)
+    if args.empty? && !block_given?
+      # if you have no arguments and no block, think of it as a query
+      # and return the answer for the first element.
       if first.respond_to? method
         return first.send(method)
       else
         return elem.style(method)
       end
+    elsif block_given?
+      each {|elem| elem.send(method, *args, &block)}
     else
       # Otherwise, think of it as a setter
       setter = "#{method}=".to_sym
       if first.respond_to? setter
-        each {|elem| elem.send(setter, *args)}
+        each {|elem| elem.send(setter, *args, &block)}
       else
-        each {|elem| elem.style(method => args[0])}
+        each {|elem| elem.style(method => args[0], &block)}
       end
     end
     self

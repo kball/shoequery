@@ -19,6 +19,14 @@ app = Shoes.app do
   b3.click do
     shoe_query('stack para').each {|p| p.text = "stack p"}
   end
+  b4 = button "Click me to take control of all buttons"
+  b4.click do
+    shoe_query('para').each {|p| p.remove}
+    para "Try clicking another button again"
+    shoe_query('button').click do
+      para "All your button are belong to us now"
+    end
+  end
 
 
 end
