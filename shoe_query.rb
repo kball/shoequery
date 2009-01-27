@@ -37,8 +37,7 @@ class ShoeQuery < Array
     k = get_class(descriptor)
 
     # Return empty unless there are more to find
-    if !base || !(k.is_a?(Class) || block_given?) || 
-       !(Shoes.constants + ['Shoes']).include?(base.class.to_s.demodulize)
+    if !base || !(k.is_a?(Class) || block_given?) 
       return []
     end
 
