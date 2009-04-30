@@ -12,10 +12,10 @@ class String
   end
 end
 class ShoeQuery < Array
-  def initialize(base, stuff)
+  def initialize(base, stuff = nil, &block)
     @base = base
-    if stuff.is_a? String
-      super(self.class.find(base, stuff))
+    if stuff.is_a?(String) || block_given?
+      super(self.class.find(base, stuff, &block))
     else
       super([stuff].flatten)
     end
@@ -88,7 +88,7 @@ class ShoeQuery < Array
 end
 
 class Shoes::App
-  def shoe_query(stuff)
-    ShoeQuery.new(self.slot, stuff)
+  def shoe_query(stuff = nil, &block)
+    ShoeQuery.new(self.slot, stuff, &block)
   end
 end
